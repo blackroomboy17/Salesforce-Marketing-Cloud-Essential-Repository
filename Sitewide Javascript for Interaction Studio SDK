@@ -1,0 +1,642 @@
+if (typeof (Evergage.FlickerDefender || {}).setPageMatchTimeout === "function") {
+    Evergage.FlickerDefender.setPageMatchTimeout(2500);
+}
+
+if (typeof (Evergage.FlickerDefender || {}).setRedisplayTimeout === "function") {
+    Evergage.FlickerDefender.setRedisplayTimeout(5000);
+}
+
+const getCookieDomain = () => {
+    let currentDomain = window.location.hostname;
+    if (currentDomain === "<insert UAT website URL>") {
+        return "<insert UAT website URL>";
+    } else if (currentDomain === "<insert Production website URL>") {
+        return "<insert Production website URL>";
+    } else if (currentDomain === "<insert developer website URL>") {
+        return "<insert developer website URL>";
+    }
+}
+const currentCookieDomain = getCookieDomain();
+
+Evergage.init({
+    account: "<SFMC Parent Org SID Name>", //TODO: Remove this when deploy on production
+dataset: "<SFMC Child Org SID Name>", //TODO: Remove this when deploy on production
+    trackerUrl: "https://automobile.us-4.evergage.com", //TODO: Remove this when deploy on production
+cookieDomain: currentCookieDomain
+
+}).then(() => {
+
+    const config = {
+        global: {
+            onActionEvent: (actionEvent) => {
+            actionEvent.user = actionEvent.user || {};
+actionEvent.user.attributes = actionEvent.user.attributes || {};
+
+                if(window.accountDetails) {
+    const cwsWebUserId = window.accountDetails.eiid;
+    const languagePreference = window.accountDetails.languagePreference;
+    const mostRecentVinNumber = window.accountDetails.vinNumber;
+    const mostRecentAccountNumber = window.accountDetails.accountNumber;
+    const mostRecentType = window.accountDetails.isRetail==true ? "Retail"
+                                       : (window.accountDetails.isLease==true ? "Lease" : undefined);
+    const mostRecentStartDate = window.accountDetails.isRetail==true ? accountDetails.contractStartDate
+                                       : (window.accountDetails.isLease==true ? accountDetails.leaseStartDate : undefined);
+    const mostRecentEndDate = window.accountDetails.isRetail==true ? accountDetails.contractEndDate
+                                       : (window.accountDetails.isLease==true ? accountDetails.leaseEndDate : undefined);
+    const mostRecentTerm = window.accountDetails.isRetail==true ? accountDetails.contractTerm
+                                       : (window.accountDetails.isLease==true ? accountDetails.leaseTerm : undefined);
+    const mostRecentVehicleYear = window.accountDetails.vehicleYear;
+    const mostRecentVehicleMake = window.accountDetails.vehicleMake;
+    const mostRecentVehicleModel = window.accountDetails.vehicleModel;
+
+                    const mostRecentLegalStatus = window.accountDetails.personaLegalStatus;
+                    const mostRecentLifecycle = window.accountDetails.personaLifecycle;
+                    const mostRecentLoyalty = window.accountDetails.personaLoyalty;
+                    const mostRecentAudience = window.accountDetails.personaAudience;
+                    const mostRecentClosedAccount = window.accountDetails.personaClosedAccount;
+                    const mostRecentCollection = window.accountDetails.personaCollection;
+                    const mostRecentState = window.accountDetails.personaState;                    
+                   
+                   
+    //
+    if (cwsWebUserId) {
+    actionEvent.user.attributes.CWS_webUserId__c = cwsWebUserId;
+    }
+   
+    if (languagePreference) {
+    actionEvent.user.attributes.Language_Preference = languagePreference;
+    }
+   
+    if (mostRecentVinNumber) {
+    actionEvent.user.attributes.MostRecent_vinNumber = mostRecentVinNumber;
+    }
+   
+    if (mostRecentAccountNumber) {
+    actionEvent.user.attributes.MostRecent_accountNumber = mostRecentAccountNumber;
+    }
+   
+    if (mostRecentType) {
+    actionEvent.user.attributes.MostRecent_Type = mostRecentType;
+    }
+   
+    if (mostRecentStartDate) {
+    actionEvent.user.attributes.MostRecent_StartDate = mostRecentStartDate;
+    }
+   
+    if (mostRecentEndDate) {
+    actionEvent.user.attributes.MostRecent_EndDate = mostRecentEndDate;
+    }
+   
+    if (mostRecentTerm) {
+    actionEvent.user.attributes.MostRecent_Term = mostRecentTerm;
+    }
+   
+    if (mostRecentVehicleYear) {
+    actionEvent.user.attributes.MostRecent_VehicleYear = mostRecentVehicleYear;
+    }
+   
+    if (mostRecentVehicleMake) {
+    actionEvent.user.attributes.MostRecent_VehicleMake = mostRecentVehicleMake;
+    }
+   
+    if (mostRecentVehicleModel) {
+    actionEvent.user.attributes.MostRecent_VehicleModel = mostRecentVehicleModel;
+    }
+
+                    if (mostRecentLegalStatus) {
+                        actionEvent.user.attributes.MostRecent_LegalStatus = mostRecentLegalStatus;
+                    }
+
+                    if (mostRecentLifecycle) {
+                        actionEvent.user.attributes.MostRecent_Lifecycle = mostRecentLifecycle;
+                    }
+
+                    if (mostRecentLoyalty) {
+                        actionEvent.user.attributes.MostRecent_Loyalty = mostRecentLoyalty;
+                    }
+                   
+                    if (mostRecentAudience) {
+                        actionEvent.user.attributes.MostRecent_Audience = mostRecentAudience;
+                    }
+
+                    if (mostRecentClosedAccount) {
+                        actionEvent.user.attributes.MostRecent_ClosedAccount = mostRecentClosedAccount;
+                    }
+
+                    if (mostRecentCollection) {
+                        actionEvent.user.attributes.MostRecent_Collection = mostRecentCollection;
+                    }
+                   
+                    if (mostRecentState) {
+                        actionEvent.user.attributes.MostRecent_State = mostRecentState;
+                    }
+                   
+                }
+               
+                return actionEvent;
+}
+        },
+        pageTypes: [
+            {
+                name: "homepage",
+                isMatch: () => /^\/en$|^\/es$|^\/$/.test(window.location.pathname),
+                action: "Home Page",
+
+            },
+            {
+                name: "publicarticlepage",
+                isMatch: () => /\/(payments|end-of-lease|financial-tools|offers-and-programs|vehicle-services)/.test(window.location.href),
+                action: "Public Article",
+               
+                catalog: {
+Article: {
+_id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+name: Evergage.resolvers.fromSelector("h1.container__heading"),
+url: Evergage.resolvers.fromCanonical(),
+language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy")(),
+tagline: Evergage.resolvers.fromSelector("div.container__heading-copy"),
+imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+category: [Evergage.resolvers.fromCanonical()()],
+
+dimensions: {
+Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+Type: ["Public"]
+}
+}
+}
+
+            },
+//new code test start (1 isMatch condition & button tracking by element id)
+{
+                name: "Pre-Qualification Form",
+                isMatch: () => /\/es\/vehicle-settings\/pre-qualification/.test(window.location.href),
+                action: "ES_Pre-Qual_Form",
+             
+listeners:[
+Evergage.listener("click", "[data-interactionstudio=\"submit-prequal\"]", (e) => {
+                        Evergage.sendEvent({
+                            action: "Click_ES_Pre-Qual_Submit"
+                        });
+                        }),
+                     Evergage.listener("click", "[data-interactionstudio=\"share-dealer\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Pre-Qual_Share_Dealer"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"success-shop-new-automobile\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Pre-Qual_Shop_New_automobile"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"success-view-dashboard\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Pre-Qual_View_Dashboard"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"contact-dealer\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Non-Pre-Qual_Call_Dealer"
+                        });                                                                      
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"dealer-contact-me\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Non-Pre-Qual_Dealer_Contact_Me"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"failed-shop-new-automobile\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Non-Pre-Qual_Shop_New_automobile"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"failed-view-dashboard\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_ES_Non-Pre-Qual_View_Dashboard"
+                        });
+                    }),
+]
+            },
+            {
+                name: "Pre-Qualification Form",
+                isMatch: () => /\/vehicle-settings\/pre-qualification/.test(window.location.href),
+                action: "Pre-Qual_Form",
+             
+listeners:[
+   Evergage.listener("click", "[data-interactionstudio=\"failed-view-dashboard\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Non-Pre-Qual_View_Dashboard"
+                        });
+                    }),
+Evergage.listener("click", "[data-interactionstudio=\"submit-prequal\"]", (e) => {
+                        Evergage.sendEvent({
+                            action: "Click_Pre-Qual_Submit"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"share-dealer\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Pre-Qual_Share_Dealer"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"success-shop-new-automobile\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Pre-Qual_Shop_New_automobile"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"success-view-dashboard\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Pre-Qual_View_Dashboard"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"contact-dealer\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Non-Pre-Qual_Call_Dealer"
+                        });                                                                      
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"dealer-contact-me\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Non-Pre-Qual_ Dealer_Contact_Me"
+                        });
+                    }),
+                     Evergage.listener("click", "[data-interactionstudio=\"failed-shop-new-automobile\"]", (e) => {
+Evergage.sendEvent({
+action: "Click_Non-Pre-Qual_Shop_New_automobile"
+                        });
+                    }),
+                     
+]
+            },
+           
+// Test Code End
+
+            {
+                name: "downloadforms",
+                isMatch: () => /\/download-forms/.test(window.location.href),
+                action: "Download Forms",
+
+            },
+
+            {
+                name: "helpcenterarticle",
+                isMatch: () => /\/help-center\/.+\/.+/.test(window.location.href),
+                action: "Help Center Article",
+
+catalog: {
+Article: {
+_id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+name: () => Evergage.resolvers.fromMeta("og:title"),
+url: Evergage.resolvers.fromCanonical(),
+language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy"),
+category: [Evergage.resolvers.fromCanonical()()],
+
+dimensions: {
+Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+Type: ["Help Center"]
+}
+}
+}
+
+            },            
+            {
+                name: "helpcentercatergory",
+                isMatch: () => /\/help-center\/.+/.test(window.location.href),
+                action: "Help Center Category",
+
+                catalog: {
+                    Category: {
+                   _id: () => Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   id: Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   url: Evergage.resolvers.fromCanonical(),
+                   name: Evergage.resolvers.fromMeta("og:title")
+                   }
+                }
+
+            },
+            {
+                name: "helpcenter",
+                isMatch: () => /\/help-center/.test(window.location.href),
+                action: "Help Center",
+
+            },            
+            {
+                name: "contact",
+                isMatch: () => /\/contact-us/.test(window.location.href),
+                action: "Contact",
+
+            },
+            {
+                name: "dashboard",
+                isMatch: () => /\/vehicle-dashboard/.test(window.location.href),
+                action: "Dashboard",
+                contentZones: [                    
+                    {name: "dashboardbadges", selector: "#vehicle-badge-callout"},
+                    {name: "dashboardarticles", selector: "#Card_1A"},
+                    {name: "ES_dashboardarticles", selector: "#ES_Card_1A"},
+                    {name: "dashboarddealerpanel", selector: "#EN_Dealer_Panel"},
+                    {name: "ES_dashboarddealerpanel", selector: "#ES_Dealer_Panel"},  
+                ],
+                // Collections button capture test code start
+                listeners: [
+Evergage.listener("click", ".btn.btn--primary", (e) => {
+                        Evergage.sendEvent({
+                            action: "Clicks_Make-A-Payment"
+                        });
+                    }),  
+Evergage.listener("click", ".interstitial-modal__continue.btn.btn--primary.btn--medium", (e) => {
+                        Evergage.sendEvent({
+                            action: "Clicks_Make-A-Payment_Continue"
+                        });
+                    }),
+                    Evergage.listener("click", ".collections-module-questionnaire__question-4-submit.btn.btn--primary.btn--medium", (e) => {
+                        Evergage.sendEvent({
+                            action: "Clicks_Promise-To-Pay"
+                        });
+                    }),
+Evergage.listener("click", ".collections-module-questionnaire__question-3-submit.btn.btn--primary.btn--medium", (e) => {
+Evergage.sendEvent({
+action: "Clicks_Sec-Msg"
+                        });
+                    }),
+                    Evergage.listener("click", ".collections-module-questionnaire__question-3-submit.btn.btn--primary.btn--medium", (e) => {
+Evergage.sendEvent({
+action: "Clicks_PhoneCall"
+                        });
+                    }),
+                ]
+                // test code ends
+            },
+           
+            {
+                name: "changecontactinfoform",
+                isMatch: () => /\/vehicle-settings\/change-contact-info-form/.test(window.location.href),
+                action: "Change Contact Info Form",
+
+            },
+            {
+                name: "leasepayoffform",
+                isMatch: () => /\/vehicle-settings\/lease-payoff-form/.test(window.location.href),
+                action: "Lease Pay off Form",
+
+            },
+{
+                name: "autopayform",
+                isMatch: () => /\/vehicle-settings\/auto-pay-form\/confirmation-make-payment/.test(window.location.href),
+                action: "Auto Pay Application Complete"                
+            },
+            {
+                name: "autopayform",
+                isMatch: () => /\/vehicle-settings\/auto-pay-form/.test(window.location.href),
+                action: "Auto Pay Form",
+               
+                listeners: [
+                    Evergage.listener("submit", ".autopay-form__submit.btn.btn--primary.btn--small", () => {
+Evergage.sendEvent({
+action: "Auto Pay Submit Click"
+});
+                    }),
+Evergage.listener("click", ".autopay__link.btn.btn--secondary.btn--small, .autopay-form__cancel.btn.btn--secondary.btn--small", () => {
+Evergage.sendEvent({
+action: "Auto Pay Cancel Click"
+});
+                    }),
+Evergage.listener("click", ".autopay__edit.btn.btn--primary.btn--small", () => {
+Evergage.sendEvent({
+action: "Auto Pay Apply Click"
+});
+                    })
+                ],
+               
+            },
+            {
+                name: "preferences",
+                isMatch: () => /\/vehicle-settings\/preferences/.test(window.location.href),
+                action: "Preferences",
+
+            },
+            {
+                name: "changeduedate",
+                isMatch: () => /\/vehicle-settings\/change-due-date/.test(window.location.href),
+                action: "Change Due Date",
+
+            },
+            {
+                name: "requestpaymentextension",
+                isMatch: () => /\/vehicle-settings\/request-payment-extension/.test(window.location.href),
+                action: "Request Payment Extension",
+
+            },
+            {
+                name: "leasetermextensionform",
+                isMatch: () => /\/vehicle-settings\/lease-term-extension-form/.test(window.location.href),
+                action: "Lease Term Extension Form",
+
+            },
+            {
+                name: "securemessages",
+                isMatch: () => /\/vehicle-settings\/secure-messages/.test(window.location.href),
+                action: "Secure Messages",
+
+            },
+            {
+                name: "vehiclecontract",
+                isMatch: () => /\/vehicle-settings\/vehicle-contract/.test(window.location.href),
+                action: "Vehicle Contract",
+
+            },
+            {
+                name: "registration",
+                isMatch: () => /\/registration/.test(window.location.href),
+                action: "Registration",
+
+            },
+            {
+                name: "magazinearticle",
+                isMatch: () => /\/magazine\/.+\/.+/.test(window.location.href),
+                action: "Magazine Article",
+               
+catalog: {
+Article: {
+_id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+name: Evergage.resolvers.fromSelector("div.magazine-article__heading"),
+url: Evergage.resolvers.fromCanonical(),
+language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy"),
+imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+category: [Evergage.resolvers.fromCanonical()()],
+
+dimensions: {
+Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+Type: ["Magazine"]
+}
+}
+}
+
+            },
+            {
+                name: "magazinecategory",
+                isMatch: () => /\/magazine\/.+/.test(window.location.href),
+                action: "Magazine Category",
+               
+                catalog: {
+                    Category: {
+                   _id: () => Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   id: Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   url: Evergage.resolvers.fromCanonical(),
+                   name: Evergage.resolvers.fromMeta("og:title")
+                   }
+                }
+
+            },
+            {
+                name: "vehiclearticle",
+                isMatch: () => /\/vehicles\/.+\/.+/.test(window.location.href),
+                action: "Vehicle Article",
+               
+catalog: {
+Article: {
+_id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+name: Evergage.resolvers.fromSelector("h1.container__heading"),
+url: Evergage.resolvers.fromCanonical(),
+language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy")(),
+imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+vehicle: Evergage.resolvers.fromMeta("vehicleModel")(),
+headline: Evergage.resolvers.fromMeta("headline")(),
+tagline: Evergage.resolvers.fromSelector("div.container__heading-copy"),
+category: [Evergage.resolvers.fromCanonical()()],
+
+dimensions: {
+Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+Type: ["Vehicle"],
+Language: [window.accountDetails.languagePreference],
+                            VehicleModel: [Evergage.resolvers.fromMeta("vehicleModel")()]
+}
+}
+}
+
+            },
+            {
+                name: "vehiclecategory",
+                isMatch: () => /\/vehicles\/.+/.test(window.location.href),
+                action: "Vehicle Category",
+               
+                catalog: {
+                    Category: {
+                   _id: () => Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   id: Evergage.util.getLastPathComponentWithoutExtension(window.location.pathname).toLowerCase(),
+                   url: Evergage.resolvers.fromCanonical(),
+                   name: Evergage.resolvers.fromMeta("og:title")
+                   }
+                }
+
+            },
+            {
+                name: "leaseendreturnarticle",
+                isMatch: () => /\/toyota-lease-end\/return\/.+/.test(window.location.href),
+                action: "Lease-End Return Article",
+               
+                catalog: {
+                    Article: {
+                        _id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        name: Evergage.resolvers.fromSelector("h1.container__heading"),
+                        url: Evergage.resolvers.fromCanonical(),
+                        language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+                        headline: Evergage.resolvers.fromMeta("headline")(),
+                        imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+                        vehicle: Evergage.resolvers.fromMeta("vehicleModel")(),
+                        cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy")(),
+                        tagline: Evergage.resolvers.fromSelector("div.container__heading-copy"),
+                        category: [Evergage.resolvers.fromCanonical()()],
+                       
+                        dimensions: {
+                            Subjects: Evergage.resolvers.fromMeta("cardBodyCopy")() ? [Evergage.resolvers.fromMeta("cardBodyCopy")()] : null,
+                            Language: [window.accountDetails.languagePreference],
+                            VehicleModel: [Evergage.resolvers.fromMeta("vehicleModel")()],
+                            Type: ["Lease-End Return"]
+                        }
+                    }
+                }
+
+            },
+            {
+                name: "leaseendreturn",
+                isMatch: () => /\/toyota-lease-end\/return/.test(window.location.href),
+                action: "Lease-End Return",
+
+            },
+            {
+                name: "leaseendextendarticle",
+                isMatch: () => /\/toyota-lease-end\/extend\/.+/.test(window.location.href),
+                action: "Lease-End Extend Article",
+               
+                catalog: {
+                    Article: {
+                        _id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        name: Evergage.resolvers.fromSelector("h1.container__heading"),
+                        url: Evergage.resolvers.fromCanonical(),
+                        language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+                        headline: Evergage.resolvers.fromMeta("headline")(),
+                        imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+                        vehicle: Evergage.resolvers.fromMeta("vehicleModel")(),
+                        cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy")(),
+                        tagline: Evergage.resolvers.fromSelector("div.container__heading-copy"),
+                        category: [Evergage.resolvers.fromCanonical()()],
+                       
+                        dimensions: {
+                            Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+                            Language: [window.accountDetails.languagePreference],
+                            VehicleModel: [Evergage.resolvers.fromMeta("vehicleModel")()],
+                            Type: ["Lease-End Extend"]
+                        }
+                    }
+                }
+
+            },
+            {
+                name: "leaseendextend",
+                isMatch: () => /\/toyota-lease-end\/extend/.test(window.location.href),
+                action: "Lease-End Extend",
+
+            },
+            {
+                name: "leaseendpurchasearticle",
+                isMatch: () => /\/toyota-lease-end\/purchase\/.+/.test(window.location.href),
+                action: "Lease-End Purchase Article",
+               
+                catalog: {
+                    Article: {
+                        _id: () => Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        id: Evergage.resolvers.fromSelectorAttribute(".language__container .language__desktop .active", "href"),
+                        name: Evergage.resolvers.fromSelector("h1.container__heading"),
+                        url: Evergage.resolvers.fromCanonical(),
+                        language: Evergage.resolvers.fromSelector(".language__container .language__desktop .active"),
+                        headline: Evergage.resolvers.fromMeta("headline")(),
+                        imageURL: Evergage.resolvers.fromMeta("imageUrl")(),
+                        vehicle: Evergage.resolvers.fromMeta("vehicleModel")(),
+                        cardBodyCopy: Evergage.resolvers.fromMeta("cardBodyCopy")(),
+                        tagline: Evergage.resolvers.fromSelector("div.container__heading-copy"),
+                        category: [Evergage.resolvers.fromCanonical()()],
+                       
+                        dimensions: {
+                            Subjects: Evergage.resolvers.fromMeta("headline")() ? [Evergage.resolvers.fromMeta("headline")()] : null,
+                            Language: [window.accountDetails.languagePreference],
+                            VehicleModel: [Evergage.resolvers.fromMeta("vehicleModel")()],
+                            Type: ["Lease-End Purchase"]
+                        }
+                    }
+                }
+
+            },
+           
+        ]
+    };
+
+    Evergage.initSitemap(config);
+
+});
